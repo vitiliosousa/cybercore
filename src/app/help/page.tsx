@@ -14,10 +14,13 @@ const faqs = [
 ];
 
 export default function HelpPage() {
-  const { isAuthenticated } = useAppStore();
+  const { isAuthenticated, isInitialized } = useAppStore();
   const router = useRouter();
-  useEffect(() => { if (!isAuthenticated) router.push("/login"); }, [isAuthenticated, router]);
-  if (!isAuthenticated) return null;
+  useEffect(() => { 
+    if (isInitialized && !isAuthenticated) router.push("/login"); 
+  }, [isInitialized, isAuthenticated, router]);
+
+  if (!isInitialized || !isAuthenticated) return null;
 
   return (
     <AppLayout>

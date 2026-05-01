@@ -7,10 +7,13 @@ import { useEffect } from "react";
 import { CheckSquare, Clock, TrendingUp, Users } from "lucide-react";
 
 export default function ReportsPage() {
-  const { isAuthenticated, projects, teamMembers } = useAppStore();
+  const { isAuthenticated, isInitialized, projects, teamMembers } = useAppStore();
   const router = useRouter();
-  useEffect(() => { if (!isAuthenticated) router.push("/login"); }, [isAuthenticated, router]);
-  if (!isAuthenticated) return null;
+  useEffect(() => { 
+    if (isInitialized && !isAuthenticated) router.push("/login"); 
+  }, [isInitialized, isAuthenticated, router]);
+
+  if (!isInitialized || !isAuthenticated) return null;
 
   const allTasks = projects.flatMap((p) => p.tasks);
   const done = allTasks.filter((t) => t.status === "done").length;
