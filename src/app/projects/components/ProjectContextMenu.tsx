@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, Edit3, Copy, Trash2 } from "lucide-react";
-import { useAppStore, Project } from "@/lib/store";
+import { Project } from "@/lib/store";
 
 interface ProjectContextMenuProps {
   project: Project;
@@ -36,12 +36,7 @@ export const ProjectContextMenu = ({ project, onClose, anchorRef }: ProjectConte
       label: "Editar Projecto",
       icon: Edit3,
       action: () => { router.push(`/projects/${project.id}/edit`); onClose(); },
-    },
-    {
-      label: "Duplicar",
-      icon: Copy,
-      action: () => { onClose(); },
-    },
+    }
   ];
 
   return (

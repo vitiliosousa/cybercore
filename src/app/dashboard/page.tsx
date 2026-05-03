@@ -62,26 +62,12 @@ export default function DashboardPage() {
   return (
     <AppLayout>
       <div className="max-w-7xl mx-auto">
-        {/* Cabeçalho */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <h1 className="text-2xl font-black text-white tracking-tight uppercase">
                 Dashboard
               </h1>
-              <div
-                className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-bold text-accent"
-                style={{
-                  borderColor: "rgba(211,240,0,0.3)",
-                  backgroundColor: "rgba(211,240,0,0.08)",
-                }}
-              >
-                <div
-                  className="w-1.5 h-1.5 rounded-full animate-pulse"
-                  style={{ backgroundColor: "#d3f000" }}
-                />
-                SISTEMA ACTIVO
-              </div>
             </div>
             <p className="text-text-muted text-xs">
               Monitorização em tempo real da eficiência operacional em{" "}

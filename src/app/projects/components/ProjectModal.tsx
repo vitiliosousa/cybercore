@@ -276,7 +276,13 @@ export const ProjectModal = ({ onClose, onSuccess }: ProjectModalProps) => {
               disabled={loading}
               className="flex-1 py-3 rounded-lg text-[13px] font-black text-black transition-all hover:opacity-90 disabled:opacity-60 flex items-center justify-center gap-2 bg-accent"
             >
-              {loading ? "A criar..." : "Criar Projecto"}
+              {loading ? (
+                <>
+                  <span className="animate-spin">⏳</span> A criar...
+                </>
+              ) : (
+                "Criar Projecto"
+              )}
             </button>
           </div>
         </form>

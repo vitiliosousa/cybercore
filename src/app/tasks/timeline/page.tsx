@@ -1,24 +1,27 @@
 "use client";
 
 import { useAppStore, Task } from "@/lib/store";
-import { useParams } from "next/navigation";
 import { useState, useMemo } from "react";
-import { TaskDetailsModal } from "../kanban/components/TaskDetailsModal";
+import { TaskDetailsModal } from "../../projects/[id]/kanban/components/TaskDetailsModal";
 import { TimelineControls } from "@/components/timeline/TimelineControls";
 import { TimelineSidebar } from "@/components/timeline/TimelineSidebar";
 import { TimelineGantt } from "@/components/timeline/TimelineGantt";
 import { startOfDay } from "@/components/timeline/utils";
 
-export default function TimelinePage() {
+export default function GlobalTimelinePage() {
   const { projects } = useAppStore();
-  const params       = useParams();
-  const projectId    = params?.id as string | undefined;
-  const project      = projectId ? projects.find((p) => p.id === projectId) : null;
+
+  const allTasks = useMemo(() => 
+    projects.flatMap((p) =>
+      p.tasks.map((t) => ({ ...t, projectId: p.id, projectName: p.name }))
+    ), [projects]
+  );
 
   const today = startOfDay(new Date());
-  const [refDate, setRefDate]       = useState(today);
+  const [refDate, setRefDate] = useState(today);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
+  // Dias visíveis: 60 dias centrados no mês actual
   const VISIBLE_DAYS = 60;
 
   const rangeStart = useMemo(() => {
@@ -40,8 +43,6 @@ export default function TimelinePage() {
     setRefDate(startOfDay(d));
   };
 
-  if (!project) return null;
-
   return (
     <div className="flex flex-col h-full overflow-hidden select-none">
       <TimelineControls 
@@ -55,13 +56,13 @@ export default function TimelinePage() {
         style={{ backgroundColor: "#0d0d0d", borderColor: "#1e1e1e" }}
       >
         <TimelineSidebar 
-          tasks={project.tasks} 
+          tasks={allTasks} 
           onTaskClick={setSelectedTask} 
-          title="Tarefas" 
+          title="Todas as Tarefas" 
         />
 
         <TimelineGantt 
-          tasks={project.tasks} 
+          tasks={allTasks} 
           rangeStart={rangeStart} 
           days={days} 
           today={today} 

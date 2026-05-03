@@ -6,7 +6,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { useState } from "react";
 import { TaskModal } from "../kanban/components/TaskModal";
 
-export function ProjectHeader() {
+export function   ProjectHeader() {
   const { projects } = useAppStore();
   const router = useRouter();
   const params = useParams();
