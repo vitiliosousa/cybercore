@@ -21,7 +21,7 @@ const columns: { id: TaskStatus; label: string; color: string; dot: string }[] =
   ];
 
 export default function KanbanPage() {
-  const { projects, updateTaskStatus } = useAppStore();
+  const { projects, editTaskStatus } = useAppStore();
   const params = useParams();
   const projectId = params.id as string;
 
@@ -42,7 +42,7 @@ export default function KanbanPage() {
 
   const handleDrop = (status: TaskStatus) => {
     if (dragging) {
-      updateTaskStatus(projectId, dragging, status);
+      editTaskStatus(projectId, dragging, {status: status});
       setDragging(null);
       setDragOver(null);
     }

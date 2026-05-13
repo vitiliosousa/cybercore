@@ -62,14 +62,14 @@ export const ProjectModal = ({ onClose, onSuccess }: ProjectModalProps) => {
     setLoading(true);
     await new Promise((r) => setTimeout(r, 600));
     addProject({
-      id: String(Date.now()),
+      // id: String(Date.now()),
       name: form.name,
       description: form.description,
-      status: form.status,
-      lead: form.lead,
-      dueDate: form.dueDate,
-      progress: 0,
-      tasks: [],
+      // status: form.status,
+      responsible: form.lead,
+      due_date: form.dueDate ? `${form.dueDate}T00:00:00Z` : "",
+      // progress: 0,
+      // tasks: [],
       members: selectedMembers.length ? selectedMembers : [form.lead],
     });
     onSuccess();

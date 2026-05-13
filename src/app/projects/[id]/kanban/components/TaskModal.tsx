@@ -22,7 +22,7 @@ export const TaskModal = ({
     title: "",
     description: "",
     status: initialStatus,
-    priority: "medium" as TaskPriority,
+    priority: "medium_priority" as TaskPriority,
     assignee: "",
     dueDate: "",
   });
@@ -61,15 +61,15 @@ export const TaskModal = ({
     await new Promise((r) => setTimeout(r, 600));
     
     addTask(projectId, {
-      id: String(Date.now()),
-      title: form.title,
+      // id: String(Date.now()),
+      name: form.title,
       description: form.description,
       status: form.status,
       priority: form.priority,
       assignee: form.assignee,
-      startDate: new Date().toISOString().split("T")[0],
-      dueDate: form.dueDate,
-      tags: [],
+      // startDate: new Date().toISOString().split("T")[0],
+      due_date: form.dueDate ? `${form.dueDate}T00:00:00Z` : "",
+      // tags: [],
     });
     
     onSuccess();

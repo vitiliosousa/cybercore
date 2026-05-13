@@ -4,10 +4,10 @@ import { GripVertical, Clock } from "lucide-react";
 import { Task, TaskPriority } from "@/lib/store";
 
 const priorityStyle: Record<TaskPriority, { color: string; bg: string }> = {
-  low: { color: "#555555", bg: "rgba(85,85,85,0.12)" },
-  medium: { color: "#f59e0b", bg: "rgba(245,158,11,0.12)" },
-  high: { color: "#f97316", bg: "rgba(249,115,22,0.12)" },
-  critical: { color: "#ef4444", bg: "rgba(239,68,68,0.12)" },
+  low_priority: { color: "#555555", bg: "rgba(85,85,85,0.12)" },
+  medium_priority: { color: "#f59e0b", bg: "rgba(245,158,11,0.12)" },
+  high_priority: { color: "#f97316", bg: "rgba(249,115,22,0.12)" },
+  critical_priority: { color: "#ef4444", bg: "rgba(239,68,68,0.12)" },
 };
 
 interface TaskCardProps {
@@ -28,10 +28,10 @@ export function TaskCard({
   const p = priorityStyle[task.priority];
 
   const priorityMap: Record<string, string> = {
-    low: "BAIXA",
-    medium: "MÉDIA",
-    high: "ALTA",
-    critical: "CRÍTICA",
+    low_priority: "BAIXA",
+    medium_priority: "MÉDIA",
+    high_priority: "ALTA",
+    critical_priority: "CRÍTICA",
   };
 
   return (
