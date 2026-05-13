@@ -13,7 +13,7 @@ export const ProjectsOverview = ({ projects }: ProjectsOverviewProps) => {
     <div className="lg:col-span-2 rounded-xl border overflow-hidden bg-bg-card border-border">
       <div className="flex items-center justify-between px-5 py-3 border-b border-border">
         <h2 className="text-xs font-black text-white uppercase tracking-widest">
-          Projectos
+          Projectos Activos
         </h2>
         <button
           onClick={() => router.push("/projects")}
@@ -22,7 +22,7 @@ export const ProjectsOverview = ({ projects }: ProjectsOverviewProps) => {
           Ver Todos <ArrowUpRight size={11} />
         </button>
       </div>
-      <div className="divide-y" style={{ borderColor: "#2a2a2a" }}>
+      <div className="divide-y divide-border">
         {projects.map((project) => (
           <div
             key={project.id}
@@ -45,7 +45,7 @@ export const ProjectsOverview = ({ projects }: ProjectsOverviewProps) => {
                   }}
                 >
                   {project.diasRestantes >= 0
-                    ? `Prazo em ${project.diasRestantes}d`
+                    ? `${project.diasRestantes} dias restantes`
                     : `${Math.abs(project.diasRestantes)}d em atraso`}
                 </span>
               </div>

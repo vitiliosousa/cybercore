@@ -34,16 +34,14 @@ export const ProjectHeader = ({
             Projectos
           </h1>
           <p className="text-[11px] text-text-muted mt-1">
-            {count}{" "}
-            {count === 1 ? "projecto encontrado" : "projectos encontrados"}
+            <span>A acompanhar </span>
+            <span className="text-accent">{count} </span>
+            <span className="text-accent">{count === 1 ? "projecto" : "projectos"}</span>
           </p>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <div
-            className="flex rounded-lg border overflow-hidden"
-            style={{ borderColor: "#2a2a2a" }}
-          >
+          <div className="flex rounded-lg border overflow-hidden border-border">
             {(["all", "active", "on_hold", "completed"] as const).map((s) => (
               <button
                 key={s}
@@ -67,24 +65,23 @@ export const ProjectHeader = ({
             Novo Projecto
           </button>
         </div>
-        
       </div>
       {/* FILTERS & SEARCH */}
-        <div className="mb-6 flex items-center gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
-              size={16}
-            />
-            <input
-              type="text"
-              placeholder="Pesquisar projetos..."
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-[#0d0d0d] border border-border-light rounded-lg py-2 pl-10 pr-4 text-[13px] text-white outline-none focus:border-accent/50 transition-colors"
-            />
-          </div>
+      <div className="mb-6 flex items-center gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+            size={16}
+          />
+          <input
+            type="text"
+            placeholder="Pesquisar projectos..."
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="w-full bg-[#0d0d0d] border border-border-light rounded-lg py-2 pl-10 pr-4 text-[13px] text-white outline-none focus:border-accent/50 transition-colors"
+          />
         </div>
+      </div>
     </div>
   );
 };

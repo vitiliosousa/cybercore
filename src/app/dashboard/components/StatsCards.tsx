@@ -10,11 +10,11 @@ export const StatsCards = ({ stats }: { stats: { projectosActivos: number; taref
     {
       label: "Projectos Activos",
       value: stats.projectosActivos,
-      badge: "+2 ESTA SEMANA",
+      badge: "ACTIVO",
       badgeColor: "#d3f000",
     },
     {
-      label: "Tarefas Pendentes",
+      label: "Tarefas em Aberto",
       value: stats.tarefasPendentes,
       badge: "-9% REDUÇÃO",
       badgeColor: "#22c55e",
@@ -22,7 +22,7 @@ export const StatsCards = ({ stats }: { stats: { projectosActivos: number; taref
     {
       label: "Tarefas Concluidas",
       value: "5",
-      badge: "+19% REDUÇÃO",
+      badge: "+19% AUMENTO",
       badgeColor: "#d3f000",
     },
     {

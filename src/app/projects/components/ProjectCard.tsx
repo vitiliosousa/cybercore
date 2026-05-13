@@ -28,7 +28,6 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
   const menuBtnRef = useRef<HTMLButtonElement>(null!);
 
   const { diasRestantes } = project;
-  const tarefasConcluidas = project.tasks.filter((t) => t.status === "done").length;
   const s = statusStyle[project.status];
 
   return (
@@ -44,8 +43,12 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           >
             {statusLabel[project.status]}
           </span>
-          <h3 className="text-[14px] font-bold text-white leading-snug truncate">{project.name}</h3>
-          <p className="text-[11px] text-text-muted mt-1 line-clamp-2">{project.description}</p>
+          <h3 className="text-[14px] font-bold text-white leading-snug truncate">
+            {project.name}
+          </h3>
+          <p className="text-[11px] text-text-muted mt-1 line-clamp-2">
+            {project.description}
+          </p>
         </div>
 
         <div className="relative">
@@ -79,28 +82,43 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           <span className="uppercase tracking-wider">Progresso</span>
           <span className="font-black text-white">{project.progress}%</span>
         </div>
-        <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: "#2a2a2a" }}>
+        <div className="h-1 rounded-full overflow-hidden bg-border">
           <div
-            className="h-full rounded-full transition-all"
-            style={{ width: `${project.progress}%`, backgroundColor: "#d3f000" }}
+            className="h-full rounded-full transition-all bg-accent"
+            style={{ width: `${project.progress}%` }}
           />
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-[11px] text-text-muted pt-2 border-t" style={{ borderColor: "#2a2a2a" }}>
-        <span>Resp.: <span className="text-text-secondary font-medium">{project.lead}</span></span>
-        <span suppressHydrationWarning style={{ color: diasRestantes < 0 ? "#ef4444" : "#555555" }}>
-          {diasRestantes >= 0 ? `${diasRestantes}d restantes` : `${Math.abs(diasRestantes)}d em atraso`}
+      <div
+        className="flex items-center justify-between text-[11px] text-text-muted pt-2 border-t"
+        style={{ borderColor: "#2a2a2a" }}
+      >
+        <span>
+          Responsável:{" "}
+          <span className="text-text-secondary font-medium">
+            {project.lead}
+          </span>
+        </span>
+        <span
+          suppressHydrationWarning
+          style={{ color: diasRestantes < 0 ? "#ef4444" : "#555555" }}
+        >
+          {diasRestantes >= 0
+            ? `${diasRestantes} dias restantes`
+            : `${Math.abs(diasRestantes)} dias em atraso`}
         </span>
       </div>
 
       <div className="flex items-center justify-between">
         <div className="flex -space-x-1.5">
+          {project.members.length === 0 && (
+            <span className="text-[10px] text-text-muted">Sem equipa</span>
+          )}
           {project.members.slice(0, 3).map((m, i) => (
             <div
               key={i}
-              className="w-6 h-6 rounded-full border-2 flex items-center justify-center text-[9px] font-black text-black"
-              style={{ backgroundColor: "#d3f000", borderColor: "#1a1a1a" }}
+              className="w-6 h-6 rounded-full border-2 flex items-center justify-center text-[9px] font-black text-black bg-accent border-bg-card"
               title={m}
             >
               {m.charAt(0)}

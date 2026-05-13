@@ -67,6 +67,7 @@ export const TaskModal = ({
       status: form.status,
       priority: form.priority,
       assignee: form.assignee,
+      startDate: new Date().toISOString().split("T")[0],
       dueDate: form.dueDate,
       tags: [],
     });

@@ -1,4 +1,4 @@
-import { Zap } from "lucide-react";
+import Image from "next/image";
 
 const StatusReadouts = () => (
   <div className="flex flex-col gap-2">
@@ -9,9 +9,7 @@ const StatusReadouts = () => (
       ["UPTIME", "99.9997%"],
     ].map(([k, v]) => (
       <div key={k} className="flex items-center gap-2 font-mono text-[11px]">
-        <span className="text-accent">
-          &gt;
-        </span>
+        <span className="text-accent">&gt;</span>
         <span className="text-[#333333]">{k}:</span>
         <span className="font-bold text-accent">{v}</span>
       </div>
@@ -32,9 +30,12 @@ export const BrandingPanel = () => {
       <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full blur-3xl opacity-10 pointer-events-none bg-accent" />
       <div className="relative z-10 p-10">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-accent">
-            <Zap size={18} className="text-black" />
-          </div>
+          <Image
+            src={"/CyberCoreLogo.svg"}
+            alt="CyberCore Logo"
+            width={36}
+            height={36}
+          />
           <div>
             <p className="text-white text-[11px] font-bold tracking-[0.2em] uppercase">
               CyberCore

@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "CyberCore - Project Management",
+  title: "CyberCore",
   description: "Autonomous infrastructure and project management.",
 };
 
@@ -19,7 +19,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
       <body className="min-h-full h-full font-sans" suppressHydrationWarning>
         <AppProvider>{children}</AppProvider>
       </body>

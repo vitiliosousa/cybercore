@@ -3,9 +3,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   CheckSquare,
-  CalendarDays,
   Users,
-  BarChart3,
   Folder,
 } from "lucide-react";
 
@@ -13,9 +11,7 @@ const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Projectos", icon: Folder, href: "/projects" },
   { label: "Tarefas", icon: CheckSquare, href: "/tasks" },
-  { label: "Timeline", icon: CalendarDays, href: "/timeline" },
   { label: "Equipa", icon: Users, href: "/team" },
-  { label: "Relatórios", icon: BarChart3, href: "/reports" },
 ];
 
 export const SidebarNav = () => {
