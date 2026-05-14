@@ -51,7 +51,6 @@ export function TaskTable({
             >
               <th className="text-left px-6 py-3 font-black">Tarefa</th>
               {showProject && <th className="text-left px-3 py-3 font-black">Projecto</th>}
-              <th className="text-left px-3 py-3 font-black">Início</th>
               <th className="text-left px-3 py-3 font-black">Prazo</th>
               <th className="text-left px-3 py-3 font-black">Status</th>
               <th className="text-left px-3 py-3 font-black">Prioridade</th>

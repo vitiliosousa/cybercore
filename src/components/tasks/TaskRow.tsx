@@ -55,12 +55,6 @@ export function TaskRow({
         </td>
       )}
 
-      {/* Início */}
-      <td className="px-3 py-3">
-        <span className="text-[11px] text-text-muted whitespace-nowrap">
-          {formatDate(task.startDate)}
-        </span>
-      </td>
 
       {/* Prazo */}
       <td className="px-3 py-3">
