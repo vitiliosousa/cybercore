@@ -19,10 +19,12 @@ export default async function universalRequest<TRequest = undefined, TReponse = 
     options: RequestOptions<TRequest> = {}
 ): Promise<TReponse|null> {
     try {
+        const token = localStorage.getItem("cybercore_token");
         const response = await fetch(url, {
             method,
             headers: {
                 "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
                 ...options.headers,
             },
             body: options.body ? JSON.stringify(options.body) : undefined,

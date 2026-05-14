@@ -81,7 +81,6 @@ export async function updateProject(id: string, body: CreateProjectRequest): Pro
             "PUT", 
             { body }
         );
-        console.log("Raw API response: ", response)
         
         return response ? mapApiProjectToFrontend(response) : null;
     } catch(err) {
@@ -98,7 +97,6 @@ export async function updateProjectStatus(id: string, body: UpdateStatusRequest)
             "PUT", 
             { body }
         );
-        console.log("Raw API response: ", response)
         
         return response ? mapApiProjectToFrontend(response) : null;
     } catch(err) {
@@ -115,7 +113,6 @@ export async function createProject(body: CreateProjectRequest): Promise<Project
             "POST", 
             { body }
         );
-        console.log("Raw API response: ", response)
         
         return response ? mapApiProjectToFrontend(response) : null;
     } catch(err) {
@@ -130,7 +127,6 @@ export const fetchProject = async(id: string): Promise<Project | null> => {
             `${GET_PROJECT(id)}`,
             "GET"
         )
-        console.log("Raw API response: ", response)
 
         if(!response) {
             throw new Error('Project not found')
@@ -149,7 +145,6 @@ export const fetchProjects = async(): Promise<ApiProject[] | null> => {
             LIST_PROJECTS,
             "GET"
         )
-        console.log("Raw API response: ", response)
 
         if(!response) {
             throw new Error('Project not found')

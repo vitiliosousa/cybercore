@@ -5,22 +5,42 @@ import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/store";
 import { Zap, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { loginUser } from "@/api/auth/fetches";
 
 export const LoginForm = () => {
   const router = useRouter();
   const { setAuthenticated } = useAppStore();
-  const [email, setEmail] = useState("admin@cyber.io");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // TODO: mock login
+  // const handleLogin = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   setError("");
+  //   await new Promise((r) => setTimeout(r, 800));
+  //   if (email) {
+  //     setAuthenticated(true);
+  //     router.push("/dashboard");
+  //   } else {
+  //     setError("Credenciais inválidas.");
+  //     setLoading(false);
+  //   }
+  // };
+
+  // live login
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    await new Promise((r) => setTimeout(r, 800));
-    if (email) {
+
+    const token = await loginUser({ email, password });
+
+    if (token) {
+      localStorage.setItem("cybercore_token", token);
       setAuthenticated(true);
       router.push("/dashboard");
     } else {
