@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { X, Calendar, User, AlignLeft, MessageSquare } from "lucide-react";
 import { Task, TaskPriority } from "@/lib/store";
+import { formatDate } from "@/components/tasks/utils";
 
 interface TaskDetailsModalProps {
   task: Task;
@@ -17,22 +18,25 @@ const priorityStyle: Record<TaskPriority, { color: string; bg: string }> = {
 };
 export const TaskDetailsModal = ({ task, onClose }: TaskDetailsModalProps) => {
   const backdropRef = useRef<HTMLDivElement>(null);
-  const p = priorityStyle[task.priority];
+  const p = priorityStyle[task.priority] || priorityStyle.low_priority;
 
   // Translation mapping for status and priority
   const statusMap: Record<string, string> = {
-    todo: "A FAZER",
+    todo: "POR FAZER",
     in_progress: "EM PROGRESSO",
     review: "EM REVISÃO",
     done: "CONCLUÍDO",
   };
 
   const priorityMap: Record<string, string> = {
-    low: "BAIXA",
-    medium: "MÉDIA",
-    high: "ALTA",
-    critical: "CRÍTICA",
+    low_priority: "BAIXA",
+    medium_priority: "MÉDIA",
+    high_priority: "ALTA",
+    critical_priority: "CRÍTICA",
   };
+
+  const priorityLabel = priorityMap[task.priority] || "NORMAL";
+  const statusLabel = statusMap[task.status] || "DESCONHECIDO";
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === backdropRef.current) onClose();
@@ -63,10 +67,10 @@ export const TaskDetailsModal = ({ task, onClose }: TaskDetailsModalProps) => {
               className="text-[10px] font-black px-2 py-0.5 rounded-sm uppercase tracking-wider"
               style={{ color: p.color, backgroundColor: p.bg }}
             >
-              {priorityMap[task.priority]}
+              {priorityLabel}
             </span>
             <span className="text-[10px] font-black text-text-muted uppercase tracking-widest">
-              {statusMap[task.status]}
+              {statusLabel}
             </span>
           </div>
 ...
@@ -106,7 +110,7 @@ export const TaskDetailsModal = ({ task, onClose }: TaskDetailsModalProps) => {
                 <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">
                   Data Limite
                 </p>
-                <p className="text-[13px] font-bold text-white">{task.dueDate}</p>
+                <p className="text-[13px] font-bold text-white">{formatDate(task.dueDate)}</p>
               </div>
             </div>
           </div>

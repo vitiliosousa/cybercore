@@ -8,11 +8,12 @@ import { ProjectHeader } from "./components/ProjectHeader";
 import { ProjectCard } from "./components/ProjectCard";
 import { ProjectModal } from "./components/ProjectModal";
 import { ProjectEmptyState } from "./components/ProjectEmptyState";
+import { DeleteProjectModal } from "./components/DeleteProjectModal";
 
 type ProjectWithDays = Project & { diasRestantes: number };
 
 export default function ProjectsPage() {
-  const { isAuthenticated, isInitialized, projects = [] } = useAppStore();
+  const { isAuthenticated, isInitialized, projects = [], removeProject } = useAppStore();
   const router = useRouter();
 
   const [search, setSearch] = useState("");
@@ -21,6 +22,8 @@ export default function ProjectsPage() {
   >("all");
   const [isMounted, setIsMounted] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
+  const [projectToEdit, setProjectToEdit] = useState<Project | undefined>(undefined);
+  const [projectToDelete, setProjectToDelete] = useState<Project | undefined>(undefined);
 
   useEffect(() => {
     setIsMounted(true);
@@ -37,14 +40,43 @@ export default function ProjectsPage() {
 
   const projectosComDias: ProjectWithDays[] = useMemo(() => {
     if (!isMounted) return [];
-    const now = Date.now();
-    return filtrados.map((p) => ({
-      ...p,
-      diasRestantes: Math.ceil(
-        (new Date(p.dueDate).getTime() - now) / 86400000,
-      ),
-    }));
+    
+    // Normalizar "hoje" para o início do dia
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const hojeTime = hoje.getTime();
+
+    return filtrados.map((p) => {
+      // Normalizar data limite para o início do dia
+      const dataLimite = new Date(p.rawDueDate);
+      dataLimite.setHours(0, 0, 0, 0);
+      const dataLimiteTime = dataLimite.getTime();
+
+      const diffTime = dataLimiteTime - hojeTime;
+      const diasRestantes = Math.round(diffTime / 86400000);
+
+      return {
+        ...p,
+        diasRestantes,
+      };
+    });
   }, [isMounted, filtrados]);
+
+  const handleEdit = (p: Project) => {
+    setProjectToEdit(p);
+    setModalAberto(true);
+  };
+
+  const handleDelete = (p: Project) => {
+    setProjectToDelete(p);
+  };
+
+  const confirmDelete = async () => {
+    if (projectToDelete) {
+      await removeProject(projectToDelete.id);
+      setProjectToDelete(undefined);
+    }
+  };
 
   if (!isInitialized || !isAuthenticated || !isMounted) return null;
 
@@ -52,8 +84,23 @@ export default function ProjectsPage() {
     <AppLayout>
       {modalAberto && (
         <ProjectModal
-          onClose={() => setModalAberto(false)}
-          onSuccess={() => setModalAberto(false)}
+          project={projectToEdit}
+          onClose={() => {
+            setModalAberto(false);
+            setProjectToEdit(undefined);
+          }}
+          onSuccess={() => {
+            setModalAberto(false);
+            setProjectToEdit(undefined);
+          }}
+        />
+      )}
+
+      {projectToDelete && (
+        <DeleteProjectModal
+          project={projectToDelete}
+          onClose={() => setProjectToDelete(undefined)}
+          onConfirm={confirmDelete}
         />
       )}
 
@@ -64,19 +111,30 @@ export default function ProjectsPage() {
           onSearchChange={setSearch}
           filter={filter}
           onFilterChange={setFilter}
-          onNewProject={() => setModalAberto(true)}
+          onNewProject={() => {
+            setProjectToEdit(undefined);
+            setModalAberto(true);
+          }}
         />
 
         {projectosComDias.length === 0 ? (
           <ProjectEmptyState
             search={search}
             onClearSearch={() => setSearch("")}
-            onNewProject={() => setModalAberto(true)}
+            onNewProject={() => {
+              setProjectToEdit(undefined);
+              setModalAberto(true);
+            }}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {projectosComDias.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+              <ProjectCard 
+                key={project.id} 
+                project={project} 
+                onEdit={() => handleEdit(project)}
+                onDelete={() => handleDelete(project)}
+              />
             ))}
           </div>
         )}

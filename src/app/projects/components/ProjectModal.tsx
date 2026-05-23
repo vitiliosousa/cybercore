@@ -16,18 +16,19 @@ const membrosEquipa = [
 interface ProjectModalProps {
   onClose: () => void;
   onSuccess: () => void;
+  project?: Project;
 }
 
-export const ProjectModal = ({ onClose, onSuccess }: ProjectModalProps) => {
-  const { addProject } = useAppStore();
+export const ProjectModal = ({ onClose, onSuccess, project }: ProjectModalProps) => {
+  const { addProject, editProject, editProjectStatus } = useAppStore();
   const [form, setForm] = useState({
-    name: "",
-    description: "",
-    lead: "",
-    dueDate: "",
-    status: "active" as Project["status"],
+    name: project?.name || "",
+    description: project?.description || "",
+    lead: project?.lead || "",
+    dueDate: project?.rawDueDate ? new Date(project.rawDueDate).toISOString().split('T')[0] : "",
+    status: (project?.status || "active") as Project["status"],
   });
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>(project?.members || []);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -60,18 +61,25 @@ export const ProjectModal = ({ onClose, onSuccess }: ProjectModalProps) => {
       return;
     }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
-    addProject({
-      // id: String(Date.now()),
+    
+    const projectData = {
       name: form.name,
       description: form.description,
-      // status: form.status,
       responsible: form.lead,
       due_date: form.dueDate ? `${form.dueDate}T00:00:00Z` : "",
-      // progress: 0,
-      // tasks: [],
       members: selectedMembers.length ? selectedMembers : [form.lead],
-    });
+    };
+
+    if (project) {
+      await editProject(project.id, projectData);
+      if (form.status !== project.status) {
+        await editProjectStatus(project.id, { status: form.status });
+      }
+    } else {
+      await addProject(projectData);
+    }
+    
+    setLoading(false);
     onSuccess();
   };
 
@@ -99,10 +107,10 @@ export const ProjectModal = ({ onClose, onSuccess }: ProjectModalProps) => {
           {" "}
           <div>
             <h2 className="text-sm font-black text-white tracking-tight">
-              Novo Projecto
+              {project ? "Editar Projecto" : "Novo Projecto"}
             </h2>
             <p className="text-[11px] text-text-muted mt-0.5">
-              Preencha os dados para criar o projecto.
+              {project ? "Actualize os dados do projecto." : "Preencha os dados para criar o projecto."}
             </p>
           </div>
           <button
@@ -231,7 +239,9 @@ export const ProjectModal = ({ onClose, onSuccess }: ProjectModalProps) => {
 
           <div>
             <label className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-[0.15em] mb-2">
-              <Users size={12} /> Membros da Equipa
+              <span className="flex items-center gap-2 text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">
+                <Users size={12} /> Membros da Equipa
+              </span>
             </label>
             <div className="flex flex-wrap gap-2">
               {membrosEquipa.map((m) => (
@@ -278,10 +288,10 @@ export const ProjectModal = ({ onClose, onSuccess }: ProjectModalProps) => {
             >
               {loading ? (
                 <>
-                  <span className="animate-spin">⏳</span> A criar...
+                  <span className="animate-spin">⏳</span> {project ? "A guardar..." : "A criar..."}
                 </>
               ) : (
-                "Criar Projecto"
+                project ? "Guardar Alterações" : "Criar Projecto"
               )}
             </button>
           </div>

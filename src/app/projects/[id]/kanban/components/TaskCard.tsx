@@ -2,6 +2,7 @@
 
 import { GripVertical, Clock } from "lucide-react";
 import { Task, TaskPriority } from "@/lib/store";
+import { formatDate } from "@/components/tasks/utils";
 
 const priorityStyle: Record<TaskPriority, { color: string; bg: string }> = {
   low_priority: { color: "#555555", bg: "rgba(85,85,85,0.12)" },
@@ -25,7 +26,7 @@ export function TaskCard({
   onDragEnd,
   isDragging,
 }: TaskCardProps) {
-  const p = priorityStyle[task.priority];
+  const p = priorityStyle[task.priority] || priorityStyle.low_priority;
 
   const priorityMap: Record<string, string> = {
     low_priority: "BAIXA",
@@ -34,10 +35,16 @@ export function TaskCard({
     critical_priority: "CRÍTICA",
   };
 
+  const priorityLabel = priorityMap[task.priority] || "NORMAL";
+
   return (
     <div
       draggable
-      onDragStart={onDragStart}
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", task.id);
+        onDragStart();
+      }}
       onDragEnd={onDragEnd}
       onClick={onClick}
       className="rounded-lg border p-3 cursor-grab active:cursor-grabbing transition-all duration-150 hover:bg-bg-card hover:scale-[1.01] hover:border-[#3a3a3a] shrink-0"
@@ -61,14 +68,14 @@ export function TaskCard({
               className="text-[9px] font-black px-1.5 py-0.5 rounded-sm uppercase"
               style={{ color: p.color, backgroundColor: p.bg }}
             >
-              {priorityMap[task.priority]}
+              {priorityLabel}
             </span>
           </div>
 
           <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
             <div className="flex items-center gap-1 text-[10px] text-[#555]">
               <Clock size={9} />
-              {task.dueDate}
+              {formatDate(task.dueDate)}
             </div>
 
             <div

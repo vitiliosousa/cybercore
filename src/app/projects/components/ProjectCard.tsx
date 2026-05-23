@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MoreHorizontal, ArrowUpRight } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { Project } from "@/lib/store";
 import { ProjectContextMenu } from "./ProjectContextMenu";
 
@@ -20,9 +20,11 @@ const statusStyle: Record<string, { color: string; bg: string }> = {
 
 interface ProjectCardProps {
   project: Project & { diasRestantes: number };
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
-export const ProjectCard = ({ project }: ProjectCardProps) => {
+export const ProjectCard = ({ project, onEdit, onDelete }: ProjectCardProps) => {
   const router = useRouter();
   const [menuAberto, setMenuAberto] = useState(false);
   const menuBtnRef = useRef<HTMLButtonElement>(null!);
@@ -72,6 +74,8 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
               project={project}
               onClose={() => setMenuAberto(false)}
               anchorRef={menuBtnRef}
+              onEdit={onEdit}
+              onDelete={onDelete}
             />
           )}
         </div>
@@ -104,9 +108,11 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
           suppressHydrationWarning
           style={{ color: diasRestantes < 0 ? "#ef4444" : "#555555" }}
         >
-          {diasRestantes >= 0
-            ? `${diasRestantes} dias restantes`
-            : `${Math.abs(diasRestantes)} dias em atraso`}
+          {diasRestantes === 0
+            ? "Termina hoje"
+            : diasRestantes > 0
+            ? `${diasRestantes} ${diasRestantes === 1 ? "dia restante" : "dias restantes"}`
+            : `${Math.abs(diasRestantes)} ${Math.abs(diasRestantes) === 1 ? "dia em atraso" : "dias em atraso"}`}
         </span>
       </div>
 

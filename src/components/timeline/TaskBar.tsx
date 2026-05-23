@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Task } from "@/lib/store";
 import { STATUS_COLOR, STATUS_LABEL, PRIORITY_COLOR, COL_W, ROW_H, startOfDay, diffDays } from "./utils";
+import { formatDate } from "../tasks/utils";
 
 interface TooltipProps {
   task: Task & { projectName?: string };
@@ -27,7 +28,7 @@ function Tooltip({ task }: TooltipProps) {
       </div>
       <p className="text-[10px] text-text-muted">Responsável: <span className="text-white">{task.assignee}</span></p>
       <p className="text-[10px] text-text-muted mt-0.5">
-        {task.startDate} → {task.dueDate}
+        {formatDate(task.startDate)} → {formatDate(task.dueDate)}
       </p>
     </div>
   );

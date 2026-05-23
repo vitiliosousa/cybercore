@@ -10,7 +10,7 @@ export interface ApiTask {
   project_id: string;
   depends_on: string;
   priority: "low_priority" | "medium_priority" | "high_priority";
-  status: "todo" | "in_progress" | "done";
+  status: "todo" | "in_progress" | "review" | "done";
   due_date: string;
   last_accessed_at: string;
   created_at: string;
@@ -86,8 +86,8 @@ export async function updateTask(id: string, body: CreateTaskRequest): Promise<T
 export async function updateTaskStatus(id: string, body: UpdateStatusRequest): Promise<Task | null> {
     try{
         const response = await universalRequest<UpdateStatusRequest, ApiTask>(
-            `${UPDATE_TASK(id)}`, 
-            "PUT", 
+            `${UPDATE_TASK_STATUS(id)}`, 
+            "PATCH", 
             { body }
         );
         console.log("Raw API response: ", response)
@@ -137,9 +137,9 @@ export const fetchTask = async(id: string): Promise<Task | null> => {
 
 export const fetchTasks = async(filters?: GetTasksFilters): Promise<ApiTask[] | null> => {
     try {
-        const url = new URL(`${window.location.origin}${LIST_TASKS}`);
+        const token = localStorage.getItem("cybercore_token");
+        if (!token) return null;
 
-        //or, safer for SSR:
         const queryString = filters
             ? "?" + new URLSearchParams(
                 Object.fromEntries(
@@ -151,11 +151,9 @@ export const fetchTasks = async(filters?: GetTasksFilters): Promise<ApiTask[] | 
             `${LIST_TASKS}${queryString}`,
             "GET"
         )
-        console.log("Request URL: ", `${LIST_TASKS}${queryString}`)
-        console.log("Raw API response: ", response)
 
         if(!response) {
-            throw new Error('Task not found')
+            return null;
         }
 
         return response

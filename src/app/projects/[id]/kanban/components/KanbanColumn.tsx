@@ -49,13 +49,19 @@ export function KanbanColumn({
       }}
       onDragOver={(e) => {
         e.preventDefault();
-        onDragOver(id);
+        e.dataTransfer.dropEffect = "move";
+        if (dragOver !== id) onDragOver(id);
       }}
       onDrop={(e) => {
         e.preventDefault();
         onDrop(id);
       }}
-      onDragLeave={onDragLeave}
+      onDragLeave={(e) => {
+        // Só dispara se o mouse saiu para fora da coluna de fato
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+          onDragLeave();
+        }
+      }}
     >
       {/* HEADER DA COLUNA */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border-light shrink-0">
