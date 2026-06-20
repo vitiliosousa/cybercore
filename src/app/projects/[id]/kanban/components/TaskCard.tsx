@@ -13,7 +13,7 @@ const priorityStyle: Record<TaskPriority, { color: string; bg: string }> = {
 interface TaskCardProps {
   task: Task;
   onClick: () => void;
-  onDragStart: () => void;
+  onDragStart: (taskId: string) => void;
   onDragEnd: () => void;
   isDragging: boolean;
 }
@@ -37,7 +37,11 @@ export function TaskCard({
   return (
     <div
       draggable
-      onDragStart={onDragStart}
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", task.id);
+        onDragStart(task.id);
+      }}
       onDragEnd={onDragEnd}
       onClick={onClick}
       className="rounded-lg border p-3 cursor-grab active:cursor-grabbing transition-all duration-150 hover:bg-bg-card hover:scale-[1.01] hover:border-[#3a3a3a] shrink-0"
@@ -49,7 +53,7 @@ export function TaskCard({
       }}
     >
       <div className="flex items-start gap-2">
-        <GripVertical size={13} className="text-[#333333] mt-0.5" />
+        <GripVertical size={13} className="text-[#333333] mt-0.5 shrink-0" />
 
         <div className="flex-1 min-w-0">
           <p className="text-[12px] font-semibold text-white mb-2 leading-tight">
@@ -68,15 +72,19 @@ export function TaskCard({
           <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
             <div className="flex items-center gap-1 text-[10px] text-[#555]">
               <Clock size={9} />
-              {task.dueDate}
+              {task.startDate && task.dueDate
+                ? `${task.startDate} → ${task.dueDate}`
+                : task.dueDate || "—"}
             </div>
 
-            <div
-              className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-black text-black"
-              style={{ backgroundColor: "#d3f000" }}
-            >
-              {task.assignee.charAt(0)}
-            </div>
+            {task.assignee && (
+              <div
+                className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-black text-black"
+                style={{ backgroundColor: "#d3f000" }}
+              >
+                {task.assignee.charAt(0)}
+              </div>
+            )}
           </div>
         </div>
       </div>

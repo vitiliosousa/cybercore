@@ -45,6 +45,14 @@ export function TimelineControls({
 
       {/* Legenda */}
       <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1.5">
+          <div className="w-0 h-0" style={{ borderLeft: "5px solid #22c55e", borderTop: "4px solid transparent", borderBottom: "4px solid transparent" }} />
+          <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Início</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-0 h-0" style={{ borderRight: "5px solid #ef4444", borderTop: "4px solid transparent", borderBottom: "4px solid transparent" }} />
+          <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Fim</span>
+        </div>
         {Object.entries(STATUS_LABEL).map(([key, label]) => (
           <div key={key} className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: STATUS_COLOR[key] }} />

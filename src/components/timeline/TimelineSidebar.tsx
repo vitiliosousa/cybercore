@@ -52,6 +52,11 @@ export function TimelineSidebar({
               {!task.projectName && task.assignee && (
                  <p className="text-[10px] text-text-muted truncate">{task.assignee}</p>
               )}
+              {task.startDate && task.dueDate && (
+                <p className="text-[9px] text-[#555] truncate">
+                  {task.startDate} → {task.dueDate}
+                </p>
+              )}
             </div>
             <div
               className="w-1.5 h-1.5 rounded-full shrink-0"

@@ -1,6 +1,20 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+  useCallback,
+} from "react";
+import { api, clearToken, getToken, setToken } from "@/lib/api/client";
+import {
+  mapCreateProjectBody,
+  mapCreateTaskBody,
+  mapProjectFromApi,
+  mapTaskFromApi,
+} from "@/lib/api/mappers";
 
 export type TaskStatus = "todo" | "in_progress" | "review" | "done";
 export type TaskPriority = "low" | "medium" | "high" | "critical";
@@ -12,7 +26,7 @@ export interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   assignee: string;
-  startDate: string; // ← ADICIONADO
+  startDate: string;
   dueDate: string;
   tags: string[];
 }
@@ -42,119 +56,244 @@ export interface TeamMember {
 interface AppState {
   isAuthenticated: boolean;
   isInitialized: boolean;
+  isLoading: boolean;
   currentUser: string;
   projects: Project[];
   teamMembers: TeamMember[];
   setAuthenticated: (v: boolean) => void;
-  addProject: (p: Project) => void;
-  removeProject: (id: string) => void;
-  addTask: (projectId: string, task: Task) => void;
-  updateTaskStatus: (projectId: string, taskId: string, status: TaskStatus) => void;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  refreshProjects: () => Promise<void>;
+  addProject: (data: {
+    name: string;
+    description: string;
+    lead: string;
+    dueDate: string;
+    status: Project["status"];
+    members: string[];
+  }) => Promise<void>;
+  removeProject: (id: string) => Promise<void>;
+  addTask: (
+    projectId: string,
+    data: {
+      title: string;
+      description: string;
+      status: TaskStatus;
+      priority: TaskPriority;
+      assignee: string;
+      dueDate: string;
+    },
+  ) => Promise<void>;
+  updateTaskStatus: (
+    projectId: string,
+    taskId: string,
+    status: TaskStatus,
+  ) => Promise<void>;
+  deleteTask: (projectId: string, taskId: string) => Promise<void>;
 }
 
-const initialProjects: Project[] = [
-  {
-    id: "1",
-    name: "Quantum Neural Network",
-    description: "Next-gen AI infrastructure for distributed computing environments.",
-    status: "active",
-    lead: "Sarah Jenkins",
-    dueDate: "2026-05-05",
-    progress: 72,
-    members: ["Sarah Jenkins", "David Chen", "Elena Rodriguez"],
-    tasks: [
-      { id: "t1", title: "Design neural layer architecture", description: "", status: "done",        priority: "high",     assignee: "Sarah Jenkins",   startDate: "2026-04-10", dueDate: "2026-04-20", tags: ["architecture"] },
-      { id: "t2", title: "Implement data pipeline",          description: "", status: "in_progress", priority: "high",     assignee: "David Chen",      startDate: "2026-04-18", dueDate: "2026-04-28", tags: ["backend"]      },
-      { id: "t3", title: "Write unit tests for core module", description: "", status: "todo",        priority: "medium",   assignee: "Elena Rodriguez", startDate: "2026-04-25", dueDate: "2026-05-02", tags: ["testing"]      },
-      { id: "t4", title: "Performance benchmarking",         description: "", status: "review",      priority: "critical", assignee: "Sarah Jenkins",   startDate: "2026-04-28", dueDate: "2026-05-04", tags: ["performance"]  },
-    ],
-  },
-  {
-    id: "2",
-    name: "Global Logistics Refactor",
-    description: "Overhaul the legacy logistics system with a modern microservices approach.",
-    status: "active",
-    lead: "Mike Ross",
-    dueDate: "2026-04-27",
-    progress: 45,
-    members: ["Mike Ross", "Anya Patel"],
-    tasks: [
-      { id: "t5", title: "Audit current codebase",           description: "", status: "done",        priority: "high",   assignee: "Mike Ross",  startDate: "2026-04-01", dueDate: "2026-04-15", tags: ["audit"]        },
-      { id: "t6", title: "Define microservices boundaries",   description: "", status: "in_progress", priority: "high",   assignee: "Anya Patel", startDate: "2026-04-14", dueDate: "2026-04-25", tags: ["architecture"] },
-      { id: "t7", title: "API gateway setup",                 description: "", status: "todo",        priority: "medium", assignee: "Mike Ross",  startDate: "2026-04-24", dueDate: "2026-04-27", tags: ["backend"]      },
-    ],
-  },
-  {
-    id: "3",
-    name: "Secure Edge Computing",
-    description: "Deploy secure edge nodes for real-time data processing at the network periphery.",
-    status: "active",
-    lead: "Elena Rodriguez",
-    dueDate: "2026-05-21",
-    progress: 28,
-    members: ["Elena Rodriguez", "James Liu", "Sarah Jenkins"],
-    tasks: [
-      { id: "t8", title: "Security threat modelling",         description: "", status: "in_progress", priority: "critical", assignee: "Elena Rodriguez", startDate: "2026-04-20", dueDate: "2026-05-01", tags: ["security"] },
-      { id: "t9", title: "Edge node provisioning scripts",    description: "", status: "todo",         priority: "high",     assignee: "James Liu",       startDate: "2026-05-01", dueDate: "2026-05-10", tags: ["infra"]    },
-    ],
-  },
-];
-
 const initialTeamMembers: TeamMember[] = [
-  { id: "m1", name: "Sarah Jenkins",   role: "Lead Engineer",     email: "s.jenkins@cyber.io",   department: "Engineering",     status: "active",  activeTasks: 4 },
-  { id: "m2", name: "David Chen",      role: "Backend Developer", email: "d.chen@cyber.io",      department: "Engineering",     status: "active",  activeTasks: 3 },
-  { id: "m3", name: "Elena Rodriguez", role: "Security Architect", email: "e.rodriguez@cyber.io", department: "Security",        status: "away",    activeTasks: 2 },
-  { id: "m4", name: "Mike Ross",       role: "Systems Lead",      email: "m.ross@cyber.io",      department: "Infrastructure",  status: "active",  activeTasks: 2 },
-  { id: "m5", name: "Anya Patel",      role: "API Engineer",      email: "a.patel@cyber.io",     department: "Engineering",     status: "active",  activeTasks: 1 },
-  { id: "m6", name: "James Liu",       role: "DevOps Engineer",   email: "j.liu@cyber.io",       department: "Infrastructure",  status: "offline", activeTasks: 1 },
+  { id: "m1", name: "Sarah Jenkins", role: "Lead Engineer", email: "s.jenkins@cyber.io", department: "Engineering", status: "active", activeTasks: 0 },
+  { id: "m2", name: "David Chen", role: "Backend Developer", email: "d.chen@cyber.io", department: "Engineering", status: "active", activeTasks: 0 },
+  { id: "m3", name: "Elena Rodriguez", role: "Security Architect", email: "e.rodriguez@cyber.io", department: "Security", status: "away", activeTasks: 0 },
+  { id: "m4", name: "Mike Ross", role: "Systems Lead", email: "m.ross@cyber.io", department: "Infrastructure", status: "active", activeTasks: 0 },
+  { id: "m5", name: "Anya Patel", role: "API Engineer", email: "a.patel@cyber.io", department: "Engineering", status: "active", activeTasks: 0 },
+  { id: "m6", name: "James Liu", role: "DevOps Engineer", email: "j.liu@cyber.io", department: "Infrastructure", status: "offline", activeTasks: 0 },
 ];
 
 const AppContext = createContext<AppState | undefined>(undefined);
 
+async function loadProjectsWithTasks(): Promise<Project[]> {
+  const apiProjects = await api.listProjects();
+  const allTasks = await api.listTasks();
+
+  const tasksByProject = allTasks.reduce<Record<string, Task[]>>((acc, t) => {
+    const pid = t.project_id ?? "";
+    if (!acc[pid]) acc[pid] = [];
+    acc[pid].push(mapTaskFromApi(t));
+    return acc;
+  }, {});
+
+  return apiProjects.map((p) =>
+    mapProjectFromApi(p, tasksByProject[p.id] ?? []),
+  );
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isInitialized, setIsInitialized]     = useState(false);
-  const [projects, setProjects]               = useState<Project[]>(initialProjects);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [currentUser, setCurrentUser] = useState("Admin User");
   const teamMembers = initialTeamMembers;
 
-  useEffect(() => {
-    const storedAuth = localStorage.getItem("cybercore_auth");
-    if (storedAuth === "true") setIsAuthenticated(true);
-    setIsInitialized(true);
+  const refreshProjects = useCallback(async () => {
+    const data = await loadProjectsWithTasks();
+    setProjects(data);
   }, []);
+
+  useEffect(() => {
+    const init = async () => {
+      const storedAuth = localStorage.getItem("cybercore_auth");
+      const token = getToken();
+
+      if (storedAuth === "true" && token) {
+        setIsAuthenticated(true);
+        try {
+          await refreshProjects();
+        } catch {
+          clearToken();
+          localStorage.removeItem("cybercore_auth");
+          setIsAuthenticated(false);
+        }
+      }
+      setIsInitialized(true);
+    };
+    init();
+  }, [refreshProjects]);
 
   const handleSetAuthenticated = (v: boolean) => {
     setIsAuthenticated(v);
-    v
-      ? localStorage.setItem("cybercore_auth", "true")
-      : localStorage.removeItem("cybercore_auth");
+    if (v) {
+      localStorage.setItem("cybercore_auth", "true");
+    } else {
+      localStorage.removeItem("cybercore_auth");
+      clearToken();
+      setProjects([]);
+    }
   };
 
-  const addProject    = (p: Project) => setProjects((prev) => [...prev, p]);
-  const removeProject = (id: string) => setProjects((prev) => prev.filter((p) => p.id !== id));
+  const login = async (email: string, password: string) => {
+    const res = await api.login(email, password);
+    setToken(res.access_token);
+    setCurrentUser(email.split("@")[0] ?? "User");
+    handleSetAuthenticated(true);
+    await refreshProjects();
+  };
 
-  const addTask = (projectId: string, task: Task) =>
+  const logout = () => handleSetAuthenticated(false);
+
+  const addProject = async (data: {
+    name: string;
+    description: string;
+    lead: string;
+    dueDate: string;
+    status: Project["status"];
+    members: string[];
+  }) => {
+    setIsLoading(true);
+    try {
+      const body = mapCreateProjectBody({
+        name: data.name,
+        description: data.description,
+        lead: data.lead,
+        dueDate: data.dueDate,
+        members: data.members.length ? data.members : [data.lead],
+      });
+      await api.createProject(body);
+      await refreshProjects();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const removeProject = async (id: string) => {
+    await api.deleteProject(id);
+    setProjects((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const addTask = async (
+    projectId: string,
+    data: {
+      title: string;
+      description: string;
+      status: TaskStatus;
+      priority: TaskPriority;
+      assignee: string;
+      dueDate: string;
+    },
+  ) => {
+    const body = mapCreateTaskBody(data);
+    const created = await api.createTask(projectId, body);
+    const task = mapTaskFromApi(created);
+
     setProjects((prev) =>
-      prev.map((p) => p.id === projectId ? { ...p, tasks: [...p.tasks, task] } : p)
+      prev.map((p) =>
+        p.id === projectId ? { ...p, tasks: [...p.tasks, task] } : p,
+      ),
     );
+  };
 
-  const updateTaskStatus = (projectId: string, taskId: string, status: TaskStatus) =>
+  const updateTaskStatus = async (
+    projectId: string,
+    taskId: string,
+    status: TaskStatus,
+  ) => {
+    const prevProjects = projects;
+
     setProjects((prev) =>
       prev.map((p) =>
         p.id === projectId
-          ? { ...p, tasks: p.tasks.map((t) => t.id === taskId ? { ...t, status } : t) }
-          : p
-      )
+          ? {
+              ...p,
+              tasks: p.tasks.map((t) =>
+                t.id === taskId ? { ...t, status } : t,
+              ),
+            }
+          : p,
+      ),
     );
 
+    try {
+      const updated = await api.updateTaskStatus(taskId, status);
+      const mapped = mapTaskFromApi(updated);
+      setProjects((prev) =>
+        prev.map((p) =>
+          p.id === projectId
+            ? {
+                ...p,
+                tasks: p.tasks.map((t) => (t.id === taskId ? mapped : t)),
+              }
+            : p,
+        ),
+      );
+    } catch {
+      setProjects(prevProjects);
+      throw new Error("Não foi possível actualizar o status da tarefa.");
+    }
+  };
+
+  const deleteTask = async (projectId: string, taskId: string) => {
+    await api.deleteTask(taskId);
+    setProjects((prev) =>
+      prev.map((p) =>
+        p.id === projectId
+          ? { ...p, tasks: p.tasks.filter((t) => t.id !== taskId) }
+          : p,
+      ),
+    );
+  };
+
   return (
-    <AppContext.Provider value={{
-      isAuthenticated, isInitialized,
-      currentUser: "Admin User",
-      projects, teamMembers,
-      setAuthenticated: handleSetAuthenticated,
-      addProject, removeProject, addTask, updateTaskStatus,
-    }}>
+    <AppContext.Provider
+      value={{
+        isAuthenticated,
+        isInitialized,
+        isLoading,
+        currentUser,
+        projects,
+        teamMembers,
+        setAuthenticated: handleSetAuthenticated,
+        login,
+        logout,
+        refreshProjects,
+        addProject,
+        removeProject,
+        addTask,
+        updateTaskStatus,
+        deleteTask,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );

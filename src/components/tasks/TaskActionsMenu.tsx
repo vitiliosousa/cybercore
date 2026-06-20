@@ -18,7 +18,7 @@ export function TaskActionsMenu({
   onViewDetails,
   onClose,
 }: TaskActionsMenuProps) {
-  const { updateTaskStatus } = useAppStore();
+  const { updateTaskStatus, deleteTask } = useAppStore();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,8 +29,8 @@ export function TaskActionsMenu({
     return () => document.removeEventListener("mousedown", handler);
   }, [onClose]);
 
-  const handleStatus = (s: TaskStatus) => {
-    updateTaskStatus(projectId, task.id, s);
+  const handleStatus = async (s: TaskStatus) => {
+    await updateTaskStatus(projectId, task.id, s);
     onClose();
   };
 
@@ -73,7 +73,12 @@ export function TaskActionsMenu({
 
       <div className="border-t mt-1 pt-1" style={{ borderColor: "#2a2a2a" }}>
         <button
-          onClick={onClose}
+          onClick={async () => {
+            if (confirm(`Eliminar a tarefa "${task.title}"?`)) {
+              await deleteTask(projectId, task.id);
+            }
+            onClose();
+          }}
           className="flex items-center gap-2.5 w-full px-3 py-2 text-[12px] text-red-400 hover:bg-red-400/10 transition-all"
         >
           <Trash2 size={13} /> Eliminar Tarefa

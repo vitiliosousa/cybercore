@@ -60,19 +60,20 @@ export const ProjectModal = ({ onClose, onSuccess }: ProjectModalProps) => {
       return;
     }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
-    addProject({
-      id: String(Date.now()),
-      name: form.name,
-      description: form.description,
-      status: form.status,
-      lead: form.lead,
-      dueDate: form.dueDate,
-      progress: 0,
-      tasks: [],
-      members: selectedMembers.length ? selectedMembers : [form.lead],
-    });
-    onSuccess();
+    try {
+      await addProject({
+        name: form.name,
+        description: form.description,
+        status: form.status,
+        lead: form.lead,
+        dueDate: form.dueDate,
+        members: selectedMembers.length ? selectedMembers : [form.lead],
+      });
+      onSuccess();
+    } catch {
+      setErrors({ form: "Não foi possível criar o projecto." });
+      setLoading(false);
+    }
   };
 
   const toggleMember = (m: string) =>

@@ -2,7 +2,7 @@
 
 import { useAppStore, Task, TaskStatus } from "@/lib/store";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { TaskDetailsModal } from "../kanban/components/TaskDetailsModal";
 import { KanbanColumn } from "../kanban/components/KanbanColumn";
 import { TaskModal } from "../kanban/components/TaskModal";
@@ -27,8 +27,9 @@ export default function KanbanPage() {
 
   const [dragging, setDragging] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<TaskStatus | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  const draggedRef = useRef(false);
 
-  // Modal states
   const [showAddModal, setShowAddModal] = useState(false);
   const [initialStatus, setInitialStatus] = useState<TaskStatus>("todo");
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -40,11 +41,21 @@ export default function KanbanPage() {
   const tasksByStatus = (status: TaskStatus) =>
     project.tasks.filter((t) => t.status === status);
 
-  const handleDrop = (status: TaskStatus) => {
-    if (dragging) {
-      updateTaskStatus(projectId, dragging, status);
-      setDragging(null);
-      setDragOver(null);
+  const handleDrop = async (status: TaskStatus) => {
+    const taskId = dragging;
+    setDragging(null);
+    setDragOver(null);
+
+    if (!taskId) return;
+
+    const task = project.tasks.find((t) => t.id === taskId);
+    if (!task || task.status === status) return;
+
+    setStatusError(null);
+    try {
+      await updateTaskStatus(projectId, taskId, status);
+    } catch {
+      setStatusError("Erro ao mover tarefa. Tente novamente.");
     }
   };
 
@@ -55,7 +66,12 @@ export default function KanbanPage() {
 
   return (
     <>
-      {/* KANBAN BOARD */}
+      {statusError && (
+        <div className="mb-3 px-4 py-2 rounded-lg text-xs text-red-400 bg-red-400/10 border border-red-400/20">
+          {statusError}
+        </div>
+      )}
+
       <div className="flex gap-3 flex-1 overflow-x-auto pb-4 items-start">
         {columns.map((col) => (
           <KanbanColumn
@@ -67,9 +83,18 @@ export default function KanbanPage() {
             onDragOver={setDragOver}
             onDragLeave={() => setDragOver(null)}
             onDrop={handleDrop}
-            onTaskClick={setSelectedTask}
-            onDragStart={setDragging}
+            onTaskClick={(task) => {
+              if (!draggedRef.current) setSelectedTask(task);
+            }}
+            onDragStart={(taskId) => {
+              draggedRef.current = false;
+              setDragging(taskId);
+            }}
             onDragEnd={() => {
+              draggedRef.current = true;
+              setTimeout(() => {
+                draggedRef.current = false;
+              }, 100);
               setDragging(null);
               setDragOver(null);
             }}
@@ -78,7 +103,6 @@ export default function KanbanPage() {
         ))}
       </div>
 
-      {/* MODALS */}
       {showAddModal && (
         <TaskModal
           projectId={projectId}

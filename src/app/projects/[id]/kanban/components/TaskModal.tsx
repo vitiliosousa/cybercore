@@ -58,21 +58,20 @@ export const TaskModal = ({
       return;
     }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 600));
-    
-    addTask(projectId, {
-      id: String(Date.now()),
-      title: form.title,
-      description: form.description,
-      status: form.status,
-      priority: form.priority,
-      assignee: form.assignee,
-      startDate: new Date().toISOString().split("T")[0],
-      dueDate: form.dueDate,
-      tags: [],
-    });
-    
-    onSuccess();
+    try {
+      await addTask(projectId, {
+        title: form.title,
+        description: form.description,
+        status: form.status,
+        priority: form.priority,
+        assignee: form.assignee,
+        dueDate: form.dueDate,
+      });
+      onSuccess();
+    } catch {
+      setErrors({ form: "Não foi possível criar a tarefa." });
+      setLoading(false);
+    }
   };
 
   const inputCls =

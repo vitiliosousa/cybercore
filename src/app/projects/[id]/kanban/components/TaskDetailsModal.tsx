@@ -94,7 +94,7 @@ export const TaskDetailsModal = ({ task, onClose }: TaskDetailsModalProps) => {
                 <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">
                   Responsável
                 </p>
-                <p className="text-[13px] font-bold text-white">{task.assignee}</p>
+                <p className="text-[13px] font-bold text-white">{task.assignee || "—"}</p>
               </div>
             </div>
 
@@ -104,9 +104,19 @@ export const TaskDetailsModal = ({ task, onClose }: TaskDetailsModalProps) => {
               </div>
               <div>
                 <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-1">
-                  Data Limite
+                  Período
                 </p>
-                <p className="text-[13px] font-bold text-white">{task.dueDate}</p>
+                <p className="text-[13px] font-bold text-white">
+                  {task.startDate ? (
+                    <>
+                      <span className="text-green-400">{task.startDate}</span>
+                      {" → "}
+                      <span className="text-red-400">{task.dueDate || "—"}</span>
+                    </>
+                  ) : (
+                    task.dueDate || "—"
+                  )}
+                </p>
               </div>
             </div>
           </div>

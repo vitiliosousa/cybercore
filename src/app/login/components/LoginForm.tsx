@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/store";
+import { ApiError } from "@/lib/api/client";
 import { Zap, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 
 export const LoginForm = () => {
   const router = useRouter();
-  const { setAuthenticated } = useAppStore();
+  const { login } = useAppStore();
   const [email, setEmail] = useState("admin@cyber.io");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -19,19 +20,22 @@ export const LoginForm = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    await new Promise((r) => setTimeout(r, 800));
-    if (email) {
-      setAuthenticated(true);
+
+    try {
+      await login(email, password);
       router.push("/dashboard");
-    } else {
-      setError("Credenciais inválidas.");
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Credenciais inválidas ou servidor indisponível.";
+      setError(message);
       setLoading(false);
     }
   };
 
   return (
     <div className="w-full max-w-sm">
-      {/* Mobile logo */}
       <div className="flex items-center gap-3 mb-10 lg:hidden">
         <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-accent">
           <Zap size={16} className="text-black" />
@@ -86,7 +90,6 @@ export const LoginForm = () => {
             </label>
             <Link
               href={"/dashboard"}
-              type="button"
               className="text-[11px] hover:text-white transition-colors text-accent"
             >
               Esqueceu o acesso?

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, Edit3, Copy, Trash2 } from "lucide-react";
-import { Project } from "@/lib/store";
+import { Project, useAppStore } from "@/lib/store";
 
 interface ProjectContextMenuProps {
   project: Project;
@@ -13,6 +13,7 @@ interface ProjectContextMenuProps {
 
 export const ProjectContextMenu = ({ project, onClose, anchorRef }: ProjectContextMenuProps) => {
   const router = useRouter();
+  const { removeProject } = useAppStore();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -61,7 +62,12 @@ export const ProjectContextMenu = ({ project, onClose, anchorRef }: ProjectConte
       ))}
       <div className="border-t my-1" style={{ borderColor: "#2a2a2a" }} />
       <button
-        onClick={() => { /* logic to remove project if needed */ onClose(); }}
+        onClick={async () => {
+          if (confirm(`Eliminar o projecto "${project.name}"?`)) {
+            await removeProject(project.id);
+          }
+          onClose();
+        }}
         className="flex items-center gap-2.5 px-3 py-2 text-[12px] text-red-400 hover:bg-red-400/10 transition-all w-full text-left"
       >
         <Trash2 size={13} />

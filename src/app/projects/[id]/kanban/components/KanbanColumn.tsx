@@ -14,7 +14,7 @@ interface KanbanColumnProps {
   dragging: string | null;
   onDragOver: (id: TaskStatus) => void;
   onDragLeave: () => void;
-  onDrop: (status: TaskStatus) => void;
+  onDrop: (status: TaskStatus) => void | Promise<void>;
   onTaskClick: (task: Task) => void;
   onDragStart: (taskId: string) => void;
   onDragEnd: () => void;
@@ -86,7 +86,7 @@ export function KanbanColumn({
             key={task.id}
             task={task}
             onClick={() => onTaskClick(task)}
-            onDragStart={() => onDragStart(task.id)}
+            onDragStart={onDragStart}
             onDragEnd={onDragEnd}
             isDragging={dragging === task.id}
           />

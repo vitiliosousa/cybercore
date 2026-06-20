@@ -23,7 +23,7 @@ function getInitials(name: string): string {
 
 export const SidebarUser = () => {
   const router = useRouter();
-  const { setAuthenticated } = useAppStore();
+  const { logout } = useAppStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -41,7 +41,7 @@ export const SidebarUser = () => {
   }, []);
 
   const handleLogout = () => {
-    setAuthenticated(false);
+    logout();
     router.push("/login");
   };
 
