@@ -86,7 +86,7 @@ export async function updateTask(id: string, body: CreateTaskRequest): Promise<T
 export async function updateTaskStatus(id: string, body: UpdateStatusRequest): Promise<Task | null> {
     try{
         const response = await universalRequest<UpdateStatusRequest, ApiTask>(
-            `${UPDATE_TASK(id)}`, 
+            `${UPDATE_TASK_STATUS(id)}`, 
             "PUT", 
             { body }
         );

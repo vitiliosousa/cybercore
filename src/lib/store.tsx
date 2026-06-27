@@ -184,17 +184,53 @@ export function AppProvider({ children }: { children: ReactNode }) {
   //         : p
   //     )
   //   );
-  const editTaskStatus = async (projectId: string, taskId: string, body: UpdateStatusRequest): Promise<void> =>{
-    const updated = await updateTaskStatus(taskId, body);
-    if(updated)
+  // const editTaskStatus = async (projectId: string, taskId: string, body: UpdateStatusRequest): Promise<void> =>{
+  //   const updated = await updateTaskStatus(taskId, body);
+  //   if(updated)
+  //     setProjects((prev) =>
+  //       prev.map((p) =>
+  //         p.id === projectId
+  //           ? { ...p, tasks: p.tasks.map((t) => t.id === taskId ? updated : t)}
+  //           : p
+  //       )
+  //     );
+  // };
+  const editTaskStatus = async (projectId: string, taskId: string, body: UpdateStatusRequest): Promise<void> => {
+  // 1. optimistic update — update UI immediately
+  setProjects((prev) =>
+    prev.map((p) =>
+      p.id === projectId
+        ? { ...p, tasks: p.tasks.map((t) => t.id === taskId ? { ...t, status: body.status as TaskStatus } : t) }
+        : p
+    )
+  );
+
+  // 2. call API
+  const updated = await updateTaskStatus(taskId, body);
+
+  // 3. rollback on failure, or sync with real API response on success
+  if (updated) {
+    setProjects((prev) =>
+      prev.map((p) =>
+        p.id === projectId
+          ? { ...p, tasks: p.tasks.map((t) => t.id === taskId ? updated : t) }
+          : p
+      )
+    );
+  } else {
+    // rollback — re-fetch the project tasks to restore real state
+    const apiTasks = await fetchTasks({ project_id: projectId });
+    if (apiTasks) {
       setProjects((prev) =>
         prev.map((p) =>
           p.id === projectId
-            ? { ...p, tasks: p.tasks.map((t) => t.id === taskId ? updated : t)}
+            ? { ...p, tasks: apiTasks.map(mapApiTaskToFrontend) }
             : p
         )
       );
-  };
+    }
+  }
+};
 
   return (
     <AppContext.Provider value={{
