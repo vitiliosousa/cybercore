@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-type RequestMethod = "GET" | "POST" | "PUT" | "DELETE"
+type RequestMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
 
 interface RequestOptions<T = undefined> {
     body?: T;

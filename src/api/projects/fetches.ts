@@ -1,6 +1,6 @@
 import { Project } from "@/lib/store";
 import universalRequest from "../universalRequest";
-import { GET_PROJECT, CREATE_PROJECT, LIST_PROJECTS, UPDATE_PROJECT, UPDATE_PROJECT_STATUS } from "../urls";
+import { GET_PROJECT, CREATE_PROJECT, LIST_PROJECTS, UPDATE_PROJECT, UPDATE_PROJECT_STATUS, DELETE_PROJECT } from "../urls";
 import { useState } from "react";
 import { error } from "console";
 
@@ -42,6 +42,7 @@ export const mapApiProjectToFrontend = (api: ApiProject): Project => ({
   status: api.status as "active" | "on_hold" | "completed",
   lead: api.responsible,
   dueDate: formatTimestamp(api.due_date),
+  rawDueDate: api.due_date,
   progress: 0, // ApiProject has no progress field — compute or default
   tasks: [],   // ApiProject has no tasks field — fetch separately if needed
   members: api.members,
@@ -93,7 +94,7 @@ export async function updateProject(id: string, body: CreateProjectRequest): Pro
 export async function updateProjectStatus(id: string, body: UpdateStatusRequest): Promise<Project | null> {
     try{
         const response = await universalRequest<UpdateStatusRequest, ApiProject>(
-            `${UPDATE_PROJECT(id)}`, 
+            `${UPDATE_PROJECT_STATUS(id)}`, 
             "PUT", 
             { body }
         );
@@ -104,6 +105,19 @@ export async function updateProjectStatus(id: string, body: UpdateStatusRequest)
         return null;
     }
     
+}
+
+export async function deleteProject(id: string): Promise<boolean> {
+    try {
+        const response = await universalRequest<undefined, any>(
+            `${DELETE_PROJECT(id)}`,
+            "DELETE"
+        );
+        return response !== null;
+    } catch(err) {
+        console.error("Fetch error: ", err)
+        return false;
+    }
 }
 
 export async function createProject(body: CreateProjectRequest): Promise<Project | null> {
@@ -141,13 +155,16 @@ export const fetchProject = async(id: string): Promise<Project | null> => {
 
 export const fetchProjects = async(): Promise<ApiProject[] | null> => {
     try {
+        const token = localStorage.getItem("cybercore_token");
+        if (!token) return null;
+
         const response = await universalRequest<undefined, ListProjectsResponse>(
             LIST_PROJECTS,
             "GET"
         )
 
         if(!response) {
-            throw new Error('Project not found')
+            return null;
         }
 
         return response.data

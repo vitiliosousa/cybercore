@@ -37,10 +37,23 @@ export const PRIORITY_MAP: Record<string, string> = {
 
 const MESES = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 
-export function formatDate(iso: string): string {
-  if (!iso) return "—";
-  const [year, month, day] = iso.split("-");
-  return `${day} ${MESES[parseInt(month) - 1]} ${year}`;
+export function formatDate(dateStr: string): string {
+  if (!dateStr || dateStr === "—") return "—";
+  
+  // The API might return DD/MM/YYYY HH:MM or ISO
+  if (dateStr.includes("/")) {
+    const [datePart] = dateStr.split(" ");
+    const [day, month, year] = datePart.split("/");
+    return `${day} ${MESES[parseInt(month) - 1]}`;
+  }
+
+  if (dateStr.includes("-")) {
+    const [year, month, dayPart] = dateStr.split("-");
+    const day = dayPart.split("T")[0];
+    return `${day} ${MESES[parseInt(month) - 1]}`;
+  }
+
+  return dateStr;
 }
 
 export function getDaysLeft(dueDate: string): number {

@@ -9,9 +9,11 @@ interface ProjectContextMenuProps {
   project: Project;
   onClose: () => void;
   anchorRef: React.RefObject<HTMLButtonElement>;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
-export const ProjectContextMenu = ({ project, onClose, anchorRef }: ProjectContextMenuProps) => {
+export const ProjectContextMenu = ({ project, onClose, anchorRef, onEdit, onDelete }: ProjectContextMenuProps) => {
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -35,7 +37,7 @@ export const ProjectContextMenu = ({ project, onClose, anchorRef }: ProjectConte
     {
       label: "Editar Projecto",
       icon: Edit3,
-      action: () => { router.push(`/projects/${project.id}/edit`); onClose(); },
+      action: () => { onEdit(); onClose(); },
     }
   ];
 
@@ -52,7 +54,7 @@ export const ProjectContextMenu = ({ project, onClose, anchorRef }: ProjectConte
       {acoes.map(({ label, icon: Icon, action }) => (
         <button
           key={label}
-          onClick={action}
+          onClick={(e) => { e.stopPropagation(); action(); }}
           className="flex items-center gap-2.5 px-3 py-2 text-[12px] text-text-secondary hover:text-white hover:bg-bg-card transition-all w-full text-left"
         >
           <Icon size={13} />
@@ -61,7 +63,7 @@ export const ProjectContextMenu = ({ project, onClose, anchorRef }: ProjectConte
       ))}
       <div className="border-t my-1" style={{ borderColor: "#2a2a2a" }} />
       <button
-        onClick={() => { /* logic to remove project if needed */ onClose(); }}
+        onClick={(e) => { e.stopPropagation(); onDelete(); onClose(); }}
         className="flex items-center gap-2.5 px-3 py-2 text-[12px] text-red-400 hover:bg-red-400/10 transition-all w-full text-left"
       >
         <Trash2 size={13} />
