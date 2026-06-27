@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAppStore } from "@/lib/store";
+import { useAppStore, decodeToken } from "@/lib/store";
 import { Zap, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { loginUser } from "@/api/auth/fetches";
@@ -41,7 +41,8 @@ export const LoginForm = () => {
 
     if (token) {
       localStorage.setItem("cybercore_token", token);
-      setAuthenticated(true);
+      const payload = decodeToken(token)
+      setAuthenticated(true, payload);
       router.push("/dashboard");
     } else {
       setError("Credenciais inválidas.");

@@ -8,6 +8,7 @@ const host = "/api/proxy"        //localhost
 //================================================================================
 export const LIST_PROJECTS = `${host}/projects`
 export const LIST_TASKS = `${host}/tasks`
+export const LIST_USERS = `${host}/users`
 export const LIST_PROJECT_TASKS = (project_id: string) => {
     return `${host}/tasks?project_id=${project_id}`
 }

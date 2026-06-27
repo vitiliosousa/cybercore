@@ -20,7 +20,7 @@ interface ProjectModalProps {
 }
 
 export const ProjectModal = ({ onClose, onSuccess, project }: ProjectModalProps) => {
-  const { addProject, editProject, editProjectStatus } = useAppStore();
+  const { addProject, editProject, editProjectStatus, teamMembers } = useAppStore();
   const [form, setForm] = useState({
     name: project?.name || "",
     description: project?.description || "",
@@ -171,9 +171,14 @@ export const ProjectModal = ({ onClose, onSuccess, project }: ProjectModalProps)
                   style={{ ...inputStyle, backgroundColor: "#181818" }}
                 >
                   <option value="">Seleccionar...</option>
-                  {membrosEquipa.map((m) => (
+                  {/* {membrosEquipa.map((m) => (
                     <option key={m} value={m}>
                       {m}
+                    </option>
+                  ))} */}
+                  {teamMembers.map((member) => (
+                    <option key={member.id} value={member.name}>
+                      {member.name}
                     </option>
                   ))}
                 </select>
@@ -244,14 +249,14 @@ export const ProjectModal = ({ onClose, onSuccess, project }: ProjectModalProps)
               </span>
             </label>
             <div className="flex flex-wrap gap-2">
-              {membrosEquipa.map((m) => (
+              {teamMembers.map((m) => (
                 <button
-                  key={m}
+                  key={m.id}
                   type="button"
-                  onClick={() => toggleMember(m)}
+                  onClick={() => toggleMember(m.name)}
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[12px] font-bold border transition-all"
                   style={
-                    selectedMembers.includes(m)
+                    selectedMembers.includes(m.name)
                       ? {
                           backgroundColor: "#d3f000",
                           color: "#000",
@@ -264,7 +269,7 @@ export const ProjectModal = ({ onClose, onSuccess, project }: ProjectModalProps)
                         }
                   }
                 >
-                  {m.split(" ")[0]}
+                  {m.name.split(" ")[0]}
                 </button>
               ))}
             </div>

@@ -23,9 +23,16 @@ function getInitials(name: string): string {
 
 export const SidebarUser = () => {
   const router = useRouter();
-  const { setAuthenticated } = useAppStore();
+  const { setAuthenticated, currentUser } = useAppStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // derive display values from token payload
+  const user = {
+    name: currentUser?.name ?? "Utilizador",
+    email: currentUser?.email ?? "",
+    role: currentUser?.role ?? ""
+  };
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -55,7 +62,7 @@ export const SidebarUser = () => {
           isOpen={dropdownOpen}
           onClose={() => setDropdownOpen(false)}
           onLogout={handleLogout}
-          user={MOCK_USER}
+          user={user}
         />
 
         <button
@@ -63,14 +70,14 @@ export const SidebarUser = () => {
           className="flex items-center gap-2.5 px-3 py-2 rounded-md hover:bg-bg-card transition-all w-full text-left group"
         >
           <div className="w-7 h-7 rounded-full flex items-center justify-center text-black text-[10px] font-black shrink-0 bg-accent">
-            {getInitials(MOCK_USER.name)}
+            {getInitials(user.name)}
           </div>
           <div className="flex flex-col min-w-0 flex-1">
             <span className="text-[12px] font-semibold text-white truncate leading-tight">
-              {MOCK_USER.name}
+              {user.name}
             </span>
             <span className="text-[10px] text-text-muted truncate leading-tight">
-              {MOCK_USER.role}
+              {user.role}
             </span>
           </div>
           <ChevronUp

@@ -32,7 +32,7 @@ function getInitials(name: string): string {
 }
 
 export default function ProfilePage() {
-  const { isAuthenticated, isInitialized, teamMembers, projects } = useAppStore();
+  const { isAuthenticated, isInitialized, projects, currentUser } = useAppStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -40,21 +40,21 @@ export default function ProfilePage() {
   }, [isInitialized, isAuthenticated, router]);
 
   // Utilizador autenticado — usando o primeiro membro como mock do utilizador logado
-  const user = useMemo(() => teamMembers[0], [teamMembers]);
+  // const user = useMemo(() => teamMembers[0], [teamMembers]);
 
   const userTasks = useMemo(() => {
-    if (!user) return [];
+    if (!currentUser) return [];
     return projects.flatMap((p) =>
       p.tasks
-        .filter((t) => t.assignee === user.name)
+        .filter((t) => t.assignee === currentUser.name)
         .map((t) => ({ ...t, projectName: p.name, projectId: p.id }))
     );
-  }, [user, projects]);
+  }, [currentUser, projects]);
 
   const userProjects = useMemo(() => {
-    if (!user) return [];
-    return projects.filter((p) => p.members.includes(user.name));
-  }, [user, projects]);
+    if (!currentUser) return [];
+    return projects.filter((p) => p.members.includes(currentUser.name));
+  }, [currentUser, projects]);
 
   const stats = useMemo(() => {
     const total = userTasks.length;
@@ -63,6 +63,20 @@ export default function ProfilePage() {
     const percentage = total > 0 ? Math.round((done / total) * 100) : 0;
     return { total, done, pending, percentage };
   }, [userTasks]);
+
+  // build a TeamMember-shaped object from the token payload
+  const user = useMemo(() => {
+    if(!currentUser) return null;
+    return {
+      id: currentUser.sub,
+      name: currentUser.name,
+      email: currentUser.email,
+      role: currentUser.role,
+      department: "",
+      status: "active" as const,
+      activeTasks: userTasks.filter((t) => t.status !== "done").length
+    };
+  }, [currentUser, userTasks]);
 
   if (!isInitialized || !isAuthenticated || !user) return null;
 

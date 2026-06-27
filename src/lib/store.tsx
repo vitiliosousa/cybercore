@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { fetchProjects, createProject, updateProject, updateProjectStatus, deleteProject, mapApiProjectToFrontend, CreateProjectRequest, UpdateStatusRequest as ProjectUpdateStatusRequest } from "@/api/projects/fetches";
 import { fetchTasks, createTask, updateTask, updateTaskStatus, mapApiTaskToFrontend, CreateTaskRequest, UpdateStatusRequest } from "@/api/tasks/fetches";
+import { fetchUsers, mapApiUserToFrontend } from "@/api/users/fetches";
 
 export type TaskStatus = "todo" | "in_progress" | "review" | "done";
 export type TaskPriority = "low_priority" | "medium_priority" | "high_priority" | "critical_priority";
@@ -45,16 +46,25 @@ export interface TeamMember {
 interface AppState {
   isAuthenticated: boolean;
   isInitialized: boolean;
-  currentUser: string;
+  currentUser: TokenPayload | null;
   projects: Project[];
   teamMembers: TeamMember[];
-  setAuthenticated: (v: boolean) => void;
+  setAuthenticated: (v: boolean, payload?: TokenPayload | null) => void;
   addProject: (body: CreateProjectRequest) => void;
   editProject: (id: string, body: CreateProjectRequest) => void;
   editProjectStatus: (id: string, body: ProjectUpdateStatusRequest) => void;
   removeProject: (id: string) => void;
   addTask: (projectId: string, body: CreateTaskRequest) => void;
   editTaskStatus: (projectId: string, taskId: string, body: UpdateStatusRequest) => void;
+}
+
+// add at the top of store.tsx
+export interface TokenPayload {
+  exp: number;
+  name: string;
+  email: string;
+  role: string;
+  sub: string;
 }
 
 const initialTeamMembers: TeamMember[] = [
@@ -72,37 +82,57 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInitialized, setIsInitialized]     = useState(false);
   const [projects, setProjects]               = useState<Project[]>([]);
-  const teamMembers = initialTeamMembers;
+  const [currentUser, setCurrentUser] = useState<TokenPayload | null>(null);
+  // const teamMembers = initialTeamMembers;
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
   useEffect(() => {
     const storedAuth = localStorage.getItem("cybercore_auth");
-    if (storedAuth === "true") setIsAuthenticated(true);
+    if (storedAuth === "true") {
+      setIsAuthenticated(true);
+      setCurrentUser(getTokenPayload());
+    }
     setIsInitialized(true);
   }, []);
 
   useEffect(() => {
-    const loadProjects = async () => {
-      const allProjects = await fetchProjects();
-      if (!allProjects) return;
+    const loadData = async () => {
+      const [allProjects, allUsers] = await Promise.all([
+        fetchProjects(),
+        fetchUsers(),
+      ]);
+      
+      if (allUsers) {
+        setTeamMembers(allUsers.map(mapApiUserToFrontend));
+      }
 
-      const projectsWithTasks = await Promise.all(
-        allProjects.map(async (apiProject) => {
-          const apiTasks = await fetchTasks({project_id: apiProject.id});
-          const tasks = apiTasks ? apiTasks.map(mapApiTaskToFrontend) : [];
-          return { ...mapApiProjectToFrontend(apiProject), tasks};
-        })
-      );
-
-      setProjects(projectsWithTasks)
+      if(allProjects) {
+        const projectsWithTasks = await Promise.all(
+          allProjects.map(async (apiProject) => {
+            const apiTasks = await fetchTasks({project_id: apiProject.id});
+            const tasks = apiTasks ? apiTasks.map(mapApiTaskToFrontend) : [];
+            return { ...mapApiProjectToFrontend(apiProject), tasks};
+          })
+        );
+        setProjects(projectsWithTasks)
+      }
     };
-    loadProjects();
+    loadData();
   }, []);
 
-  const handleSetAuthenticated = (v: boolean) => {
+  const handleSetAuthenticated = (v: boolean, payload?: TokenPayload | null) => {
     setIsAuthenticated(v);
-    v
-      ? localStorage.setItem("cybercore_auth", "true")
-      : localStorage.removeItem("cybercore_auth");
+    // v
+    //   ? localStorage.setItem("cybercore_auth", "true")
+    //   : localStorage.removeItem("cybercore_auth");
+    if(v) {
+      localStorage.setItem("cybercore_auth", "true")
+      setCurrentUser(payload ?? null)
+    } else {
+      localStorage.removeItem("cybercore_auth");
+      localStorage.removeItem("cybercore_token");
+      setCurrentUser(null);
+    }
   };
 
   const addProject = async (body: CreateProjectRequest): Promise<void> => {
@@ -143,25 +173,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       );
   };
 
-  // const updateTaskStatus = (projectId: string, taskId: string, status: TaskStatus) =>
-  //   setProjects((prev) =>
-  //     prev.map((p) =>
-  //       p.id === projectId
-  //         ? { ...p, tasks: p.tasks.map((t) => t.id === taskId ? { ...t, status } : t) }
-  //         : p
-  //     )
-  //   );
-  // const editTaskStatus = async (projectId: string, taskId: string, body: UpdateStatusRequest): Promise<void> =>{
-  //   const updated = await updateTaskStatus(taskId, body);
-  //   if(updated)
-  //     setProjects((prev) =>
-  //       prev.map((p) =>
-  //         p.id === projectId
-  //           ? { ...p, tasks: p.tasks.map((t) => t.id === taskId ? updated : t)}
-  //           : p
-  //       )
-  //     );
-  // };
   const editTaskStatus = async (projectId: string, taskId: string, body: UpdateStatusRequest): Promise<void> => {
   // 1. optimistic update — update UI immediately
   setProjects((prev) =>
@@ -202,7 +213,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return (
     <AppContext.Provider value={{
       isAuthenticated, isInitialized,
-      currentUser: "Admin User",
+      currentUser,
       projects, teamMembers,
       setAuthenticated: handleSetAuthenticated,
       addProject, editProject, editProjectStatus, removeProject, addTask, editTaskStatus,
@@ -216,4 +227,20 @@ export function useAppStore() {
   const ctx = useContext(AppContext);
   if (!ctx) throw new Error("useAppStore must be used within AppProvider");
   return ctx;
+}
+
+
+export function decodeToken(token: string): TokenPayload | null {
+  try {
+    const payload = token.split(".")[1];
+    return JSON.parse(atob(payload)) as TokenPayload;
+  } catch {
+    return null;
+  }
+}
+
+export function getTokenPayload(): TokenPayload | null {
+  const token = localStorage.getItem("cybercore_token");
+  if (!token) return null;
+  return decodeToken(token);
 }

@@ -17,7 +17,7 @@ export const TaskModal = ({
   onClose,
   onSuccess,
 }: TaskModalProps) => {
-  const { addTask, teamMembers } = useAppStore();
+  const { addTask, projects } = useAppStore();
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -29,6 +29,8 @@ export const TaskModal = ({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const backdropRef = useRef<HTMLDivElement>(null);
+  const project = projects.find((p) => p.id === projectId);
+  const teamMembers = project?.members ?? [];
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === backdropRef.current) onClose();
@@ -222,9 +224,9 @@ export const TaskModal = ({
                   style={{ ...inputStyle, backgroundColor: "#181818" }}
                 >
                   <option value="">Seleccionar...</option>
-                  {teamMembers.map((m) => (
-                    <option key={m.id} value={m.name}>
-                      {m.name}
+                  {teamMembers.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
                     </option>
                   ))}
                 </select>
